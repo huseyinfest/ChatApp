@@ -124,4 +124,17 @@ app.MapHub<ChatHub>("/chatHub");
 // Map default route to index.html
 app.MapFallbackToFile("index.html");
 
+// Veritabanı geçişlerini başlangıçta çalıştır
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ChatDbContext>();
+    if (context.Database.GetPendingMigrations().Any())
+    {
+        Console.WriteLine("Applying migrations...");
+        context.Database.Migrate();
+        Console.WriteLine("Migrations applied successfully.");
+    }
+}
+
 app.Run();

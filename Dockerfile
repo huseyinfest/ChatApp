@@ -15,9 +15,8 @@ COPY . .
 # Uygulamayı "Release" modunda derle ve yayınla
 RUN dotnet publish -c Release -o /app
 
-# Uygulamayı çalıştırmak için SDK imajını kullan
-# Bu, "dotnet tool" gibi SDK komutlarının çalışmasına izin verir.
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS final
+# Uygulamayı çalıştırmak için daha küçük bir runtime imajı kullan
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 
 # Çalışma dizinini ayarla
 WORKDIR /app
@@ -25,7 +24,8 @@ WORKDIR /app
 # Yayınlanan dosyaları bir önceki aşamadan kopyala
 COPY --from=build /app .
 
-# Giriş noktası (Entrypoint) komutlarını ayrı ayrı argümanlar olarak tanımla.
-# Bu, komutları doğru şekilde çalıştırmanın en güvenilir yoludur.
-# Önce veritabanı geçişlerini çalıştır, sonra uygulamayı başlat.
-ENTRYPOINT ["/usr/bin/env", "bash", "-c", "dotnet ef database update --no-build --connection '$DATABASE_URL' && dotnet ChatApp.dll"]
+# Uygulamanın çalışacağı portu belirtir
+EXPOSE 8080
+
+# Uygulamayı çalıştırmak için giriş noktası
+ENTRYPOINT ["dotnet", "ChatApp.dll"]
