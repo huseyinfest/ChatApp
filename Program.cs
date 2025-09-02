@@ -5,7 +5,8 @@ using System.Text;
 using ChatApp.Data;
 using ChatApp.Services;
 using ChatApp.Hubs;
-using StackExchange.Redis; // Redis için gerekli
+using StackExchange.Redis;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
