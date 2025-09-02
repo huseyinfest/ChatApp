@@ -25,6 +25,7 @@ WORKDIR /app
 # Yayınlanan dosyaları bir önceki aşamadan kopyala
 COPY --from=build /app .
 
-# Giriş noktası (Entrypoint) olarak bir shell script kullan
-# Bu script önce veritabanı geçişlerini çalıştırır, sonra uygulamayı başlatır.
-ENTRYPOINT ["/bin/bash", "-c", "dotnet ef database update --no-build --connection \"$DATABASE_URL\" && dotnet ChatApp.dll"]
+# Giriş noktası (Entrypoint) komutlarını ayrı ayrı argümanlar olarak tanımla.
+# Bu, komutları doğru şekilde çalıştırmanın en güvenilir yoludur.
+# Önce veritabanı geçişlerini çalıştır, sonra uygulamayı başlat.
+ENTRYPOINT ["/usr/bin/env", "bash", "-c", "dotnet ef database update --no-build --connection '$DATABASE_URL' && dotnet ChatApp.dll"]
