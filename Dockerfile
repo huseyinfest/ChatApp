@@ -7,7 +7,8 @@ RUN dotnet restore
 
 # copy everything else and build app
 COPY . .
-RUN dotnet publish -c Release -o /app --no-restore
+# Sadece publish komutunu --no-restore'dan --force'e çevirdik
+RUN dotnet publish -c Release -o /app --force
 
 # final stage/image
 FROM mcr.microsoft.com/dotnet/aspnet:9.0
