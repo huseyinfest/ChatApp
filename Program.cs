@@ -5,6 +5,7 @@ using System.Text;
 using ChatApp.Data;
 using ChatApp.Services;
 using ChatApp.Hubs;
+using StackExchange.Redis; // Redis için gerekli
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,9 +17,38 @@ builder.Services.AddOpenApi();
 // Add SignalR
 builder.Services.AddSignalR();
 
-// Add Entity Framework
+// Veritabanı bağlantısını ortam değişkeninden veya appsettings'ten al
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Railway için DATABASE_URL ortam değişkenini kullanma
+if (Environment.GetEnvironmentVariable("DATABASE_URL") != null)
+{
+    var railwayConnectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
+    
+    // Npgsql formatına dönüştürme
+    var uri = new Uri(railwayConnectionString);
+    var db = uri.AbsolutePath.Trim('/');
+    var user = uri.UserInfo.Split(':')[0];
+    var passwd = uri.UserInfo.Split(':')[1];
+    var host = uri.Host;
+    var port = uri.Port > 0 ? uri.Port : 5432;
+    
+    connectionString = $"Server={host};Port={port};Database={db};User Id={user};Password={passwd};";
+}
+
+// Entity Framework'ü yapılandırma
 builder.Services.AddDbContext<ChatDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(connectionString));
+
+// Redis için Data Protection
+if (Environment.GetEnvironmentVariable("REDIS_URL") != null)
+{
+    var redis = ConnectionMultiplexer.Connect(Environment.GetEnvironmentVariable("REDIS_URL")!);
+    builder.Services.AddDataProtection()
+        .PersistKeysToStackExchangeRedis(redis, "DataProtection-Keys");
+}
+
+
 // Add JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
