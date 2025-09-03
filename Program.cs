@@ -19,7 +19,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 
 // Entity Framework'ü yapılandırma
-// Railway, DATABASE_URL değişkenini otomatik olarak DefaultConnection'a bağlar
+// Railway, DATABASE_URL ortam değişkenini otomatik olarak DefaultConnection'a bağlar.
 builder.Services.AddDbContext<ChatDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
