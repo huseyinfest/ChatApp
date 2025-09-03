@@ -81,19 +81,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Veritabanı geçişlerini başlangıçta çalıştır
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<ChatDbContext>();
-    if (context.Database.GetPendingMigrations().Any())
-    {
-        Console.WriteLine("Applying migrations...");
-        context.Database.Migrate();
-        Console.WriteLine("Migrations applied successfully.");
-    }
-}
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
