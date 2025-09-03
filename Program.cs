@@ -18,28 +18,10 @@ builder.Services.AddOpenApi();
 // Add SignalR
 builder.Services.AddSignalR();
 
-// Veritabanı bağlantısını ortam değişkeninden veya appsettings'ten al
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-
-// Railway için DATABASE_URL ortam değişkenini kullanma
-if (Environment.GetEnvironmentVariable("DATABASE_URL") != null)
-{
-    var railwayConnectionString = Environment.GetEnvironmentVariable("DATABASE_URL");
-    
-    // Npgsql formatına dönüştürme
-    var uri = new Uri(railwayConnectionString);
-    var db = uri.AbsolutePath.Trim('/');
-    var user = uri.UserInfo.Split(':')[0];
-    var passwd = uri.UserInfo.Split(':')[1];
-    var host = uri.Host;
-    var port = uri.Port > 0 ? uri.Port : 5432;
-    
-    connectionString = $"Server={host};Port={port};Database={db};User Id={user};Password={passwd};";
-}
-
 // Entity Framework'ü yapılandırma
+// Railway, DATABASE_URL değişkenini otomatik olarak DefaultConnection'a bağlar
 builder.Services.AddDbContext<ChatDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Redis için Data Protection
 if (Environment.GetEnvironmentVariable("REDIS_URL") != null)
@@ -123,18 +105,5 @@ app.MapHub<ChatHub>("/chatHub");
 
 // Map default route to index.html
 app.MapFallbackToFile("index.html");
-
-// Veritabanı geçişlerini başlangıçta çalıştır
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<ChatDbContext>();
-    if (context.Database.GetPendingMigrations().Any())
-    {
-        Console.WriteLine("Applying migrations...");
-        context.Database.Migrate();
-        Console.WriteLine("Migrations applied successfully.");
-    }
-}
 
 app.Run();
