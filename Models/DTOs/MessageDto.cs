@@ -1,15 +1,23 @@
+using ChatApp.Models;
+
 namespace ChatApp.Models.DTOs
 {
     public class SendMessageDto
     {
         public int ReceiverId { get; set; }
         public string Content { get; set; } = string.Empty;
+        public MessageType MessageType { get; set; } = MessageType.Text;
+        public string? ImageUrl { get; set; }
+        public string? ImageFileName { get; set; }
     }
     
     public class MessageDto
     {
         public int Id { get; set; }
         public string Content { get; set; } = string.Empty;
+        public MessageType MessageType { get; set; } = MessageType.Text;
+        public string? ImageUrl { get; set; }
+        public string? ImageFileName { get; set; }
         public DateTime SentAt { get; set; }
         public bool IsRead { get; set; }
         public DateTime? ReadAt { get; set; }

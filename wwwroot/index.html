@@ -84,6 +84,23 @@
             color: #6c757d;
             font-size: 0.875rem;
         }
+        .message-image {
+            max-width: 300px;
+            max-height: 300px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .message-image:hover {
+            transform: scale(1.02);
+        }
+        .image-message {
+            padding: 0.5rem;
+        }
+        .image-loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -169,9 +186,25 @@
                             <div class="message-input">
                                 <div class="input-group">
                                     <input type="text" class="form-control" id="messageInput" placeholder="Mesajınızı yazın..." disabled>
+                                    <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageSelect()">
+                                    <button class="btn btn-outline-secondary" id="imageButton" onclick="selectImage()" disabled title="Resim gönder">
+                                        <i class="fas fa-image"></i>
+                                    </button>
                                     <button class="btn btn-primary" id="sendButton" onclick="sendMessage()" disabled>
                                         <i class="fas fa-paper-plane"></i>
                                     </button>
+                                </div>
+                                <div id="imagePreview" class="mt-2" style="display: none;">
+                                    <div class="d-flex align-items-center">
+                                        <img id="previewImage" src="" alt="Preview" style="max-width: 100px; max-height: 100px; border-radius: 8px;">
+                                        <div class="ms-2">
+                                            <div class="fw-bold" id="previewFileName"></div>
+                                            <small class="text-muted" id="previewFileSize"></small>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-danger ms-auto" onclick="cancelImageUpload()">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div id="typingIndicator" class="typing-indicator mt-2" style="display: none;"></div>
                             </div>

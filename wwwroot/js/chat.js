@@ -4,6 +4,7 @@ let selectedUser = null;
 let connection = null;
 let users = [];
 let conversations = {};
+let selectedImage = null;
 
 // API base URL
 const API_BASE = '/api';
@@ -228,6 +229,7 @@ function selectUser(user) {
     
     document.getElementById('messageInput').disabled = false;
     document.getElementById('sendButton').disabled = false;
+    document.getElementById('imageButton').disabled = false;
     
     // Load conversation
     loadConversation(user.id);
@@ -283,6 +285,12 @@ function renderMessages(messages) {
 async function sendMessage() {
     if (!selectedUser) return;
 
+    // If image is selected, upload image instead
+    if (selectedImage) {
+        uploadImage();
+        return;
+    }
+
     const messageInput = document.getElementById('messageInput');
     const content = messageInput.value.trim();
     
@@ -297,7 +305,8 @@ async function sendMessage() {
             },
             body: JSON.stringify({
                 receiverId: selectedUser.id,
-                content: content
+                content: content,
+                messageType: 0 // Text message
             })
         });
 
@@ -310,7 +319,8 @@ async function sendMessage() {
             if (connection) {
                 connection.invoke("SendMessage", {
                     receiverId: selectedUser.id,
-                    content: content
+                    content: content,
+                    messageType: 0
                 });
             }
         }
@@ -325,8 +335,22 @@ function addMessageToUI(message, isSent) {
     
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+    
+    let messageContent = '';
+    if (message.messageType === 1) { // Image message
+        messageContent = `
+            <div class="image-message">
+                <img src="${message.imageUrl}" alt="${message.imageFileName || 'Image'}" 
+                     class="message-image" onclick="openImageModal('${message.imageUrl}', '${message.imageFileName || 'Image'}')">
+                ${message.content ? `<div class="mt-2">${message.content}</div>` : ''}
+            </div>
+        `;
+    } else { // Text message
+        messageContent = `<div class="message-content">${message.content}</div>`;
+    }
+    
     messageDiv.innerHTML = `
-        <div class="message-content">${message.content}</div>
+        ${messageContent}
         <small class="message-time">${new Date(message.sentAt).toLocaleTimeString()}</small>
     `;
     
@@ -390,9 +414,187 @@ document.getElementById('messageInput').addEventListener('input', function() {
     }
 });
 
+// Image upload functions
+function selectImage() {
+    document.getElementById('imageInput').click();
+}
+
+function handleImageSelect() {
+    const input = document.getElementById('imageInput');
+    const file = input.files[0];
+    
+    if (file) {
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Geçersiz dosya türü. Sadece JPEG, PNG, GIF ve WebP dosyaları kabul edilir.');
+            return;
+        }
+        
+        // Validate file size (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Dosya boyutu çok büyük. Maksimum 5MB kabul edilir.');
+            return;
+        }
+        
+        selectedImage = file;
+        showImagePreview(file);
+    }
+}
+
+function showImagePreview(file) {
+    const preview = document.getElementById('imagePreview');
+    const previewImage = document.getElementById('previewImage');
+    const previewFileName = document.getElementById('previewFileName');
+    const previewFileSize = document.getElementById('previewFileSize');
+    
+    // Create object URL for preview
+    const objectUrl = URL.createObjectURL(file);
+    previewImage.src = objectUrl;
+    previewFileName.textContent = file.name;
+    previewFileSize.textContent = formatFileSize(file.size);
+    
+    preview.style.display = 'block';
+    document.getElementById('messageInput').placeholder = 'Resim açıklaması (isteğe bağlı)...';
+}
+
+function cancelImageUpload() {
+    selectedImage = null;
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('imageInput').value = '';
+    document.getElementById('messageInput').placeholder = 'Mesajınızı yazın...';
+    
+    // Revoke object URL to free memory
+    const previewImage = document.getElementById('previewImage');
+    if (previewImage.src.startsWith('blob:')) {
+        URL.revokeObjectURL(previewImage.src);
+    }
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+async function uploadImage() {
+    if (!selectedImage || !selectedUser) return;
+    
+    const formData = new FormData();
+    formData.append('image', selectedImage);
+    formData.append('receiverId', selectedUser.id);
+    
+    const messageInput = document.getElementById('messageInput');
+    const caption = messageInput.value.trim();
+    
+    try {
+        // Show loading state
+        const imageButton = document.getElementById('imageButton');
+        const sendButton = document.getElementById('sendButton');
+        imageButton.disabled = true;
+        sendButton.disabled = true;
+        imageButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        
+        const response = await fetch(`${API_BASE}/message/upload-image`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('chatToken')}`
+            },
+            body: formData
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Add caption if provided
+            if (caption) {
+                await fetch(`${API_BASE}/message/send`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('chatToken')}`
+                    },
+                    body: JSON.stringify({
+                        receiverId: selectedUser.id,
+                        content: caption,
+                        messageType: 1,
+                        imageUrl: data.imageUrl,
+                        imageFileName: selectedImage.name
+                    })
+                });
+            }
+            
+            // Add to UI
+            addMessageToUI(data.message, true);
+            
+            // Send via SignalR
+            if (connection) {
+                connection.invoke("SendMessage", {
+                    receiverId: selectedUser.id,
+                    content: caption,
+                    messageType: 1,
+                    imageUrl: data.imageUrl,
+                    imageFileName: selectedImage.name
+                });
+            }
+            
+            // Clear input and preview
+            messageInput.value = '';
+            cancelImageUpload();
+        } else {
+            const error = await response.json();
+            alert(error.message || 'Resim yüklenemedi');
+        }
+    } catch (error) {
+        console.error('Image upload error:', error);
+        alert('Resim yükleme sırasında hata oluştu');
+    } finally {
+        // Reset buttons
+        const imageButton = document.getElementById('imageButton');
+        const sendButton = document.getElementById('sendButton');
+        imageButton.disabled = false;
+        sendButton.disabled = false;
+        imageButton.innerHTML = '<i class="fas fa-image"></i>';
+    }
+}
+
+function openImageModal(imageUrl, fileName) {
+    // Create modal for full-size image view
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.innerHTML = `
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">${fileName}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="${imageUrl}" alt="${fileName}" class="img-fluid">
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const bootstrapModal = new bootstrap.Modal(modal);
+    bootstrapModal.show();
+    
+    // Remove modal from DOM when hidden
+    modal.addEventListener('hidden.bs.modal', () => {
+        document.body.removeChild(modal);
+    });
+}
+
 // Enter key to send message
 document.getElementById('messageInput').addEventListener('keypress', function(e) {
     if (e.key === 'Enter') {
-        sendMessage();
+        if (selectedImage) {
+            uploadImage();
+        } else {
+            sendMessage();
+        }
     }
 });

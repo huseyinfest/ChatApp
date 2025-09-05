@@ -19,6 +19,9 @@ namespace ChatApp.Services
             var message = new Message
             {
                 Content = messageDto.Content,
+                MessageType = messageDto.MessageType,
+                ImageUrl = messageDto.ImageUrl,
+                ImageFileName = messageDto.ImageFileName,
                 SenderId = senderId,
                 ReceiverId = messageDto.ReceiverId,
                 SentAt = DateTime.UtcNow,
@@ -36,6 +39,9 @@ namespace ChatApp.Services
             {
                 Id = message.Id,
                 Content = message.Content,
+                MessageType = message.MessageType,
+                ImageUrl = message.ImageUrl,
+                ImageFileName = message.ImageFileName,
                 SentAt = message.SentAt,
                 IsRead = message.IsRead,
                 ReadAt = message.ReadAt,
@@ -74,6 +80,9 @@ namespace ChatApp.Services
             {
                 Id = m.Id,
                 Content = m.Content,
+                MessageType = m.MessageType,
+                ImageUrl = m.ImageUrl,
+                ImageFileName = m.ImageFileName,
                 SentAt = m.SentAt,
                 IsRead = m.IsRead,
                 ReadAt = m.ReadAt,

@@ -2,12 +2,23 @@ using System.ComponentModel.DataAnnotations;
 
 namespace ChatApp.Models
 {
+    public enum MessageType
+    {
+        Text = 0,
+        Image = 1
+    }
+
     public class Message
     {
         public int Id { get; set; }
         
-        [Required]
         public string Content { get; set; } = string.Empty;
+        
+        public MessageType MessageType { get; set; } = MessageType.Text;
+        
+        public string? ImageUrl { get; set; }
+        
+        public string? ImageFileName { get; set; }
         
         public DateTime SentAt { get; set; } = DateTime.UtcNow;
         

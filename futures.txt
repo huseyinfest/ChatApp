@@ -1,0 +1,11 @@
+Real-time Chat App
+Sunucu tarafında API ve veritabanı etkileşimi için .NET Core backendi istemci tarafında bir web arayüzü kullanılıyor.
+ASP.NET Core: API'ler, servisler ve ana uygulama burada çalışır.
+PostgreSQL: İlişkisel veritabanı yönetim sistemi.
+Entity Framework Core: .NET ve PostgreSQL arasındaki köprüyü kuran bir Object-Relational Mapper (ORM) aracıdır. SQL komutları yazmanıza gerek kalmadan C# kodu aracılığıyla veritabanı tabloları oluşturmamızı ve verileri yönetmemizi sağlar.
+SignalR: Sunucu ve istemciler arasında kalıcı bir bağlantı (WebSocket) kurarak bir mesaj gönderildiğinde diğer kullanıcılara anında iletilmesini sağlar.
+JSON Web Tokens (JWT): Bir kimlik doğrulama yöntemidir. Kullanıcı giriş yaptığında sunucu tarafından bir JWT oluşturulur. İstemci bu tokeni request ile beraber API'ye gönderir API yetkilendirmeyi doğrularsa işlem gerçekleşir.
+Docker: Uygulamayı tüm bağımlılıklar ve ayarları ile tek bir paket haline getirir.
+Railway: Projeyi bulutta barındırmak içim kullanılan deployment platformudur.
+Redis: Önbellekleme sistemidir.
+DTO: Data Transfer Object 

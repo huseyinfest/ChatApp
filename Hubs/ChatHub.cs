@@ -27,6 +27,9 @@ namespace ChatApp.Hubs
                 await Clients.Group($"user_{messageDto.ReceiverId}").SendAsync("ReceiveMessage", new MessageDto
                 {
                     Content = messageDto.Content,
+                    MessageType = messageDto.MessageType,
+                    ImageUrl = messageDto.ImageUrl,
+                    ImageFileName = messageDto.ImageFileName,
                     SentAt = DateTime.UtcNow,
                     Sender = new UserDto { Id = senderId },
                     Receiver = new UserDto { Id = messageDto.ReceiverId }
