@@ -11,6 +11,12 @@ const API_BASE = '/api';
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
+    // Enable image button immediately on page load
+    const imageButton = document.getElementById('imageButton');
+    if (imageButton) {
+        imageButton.disabled = false;
+    }
+    
     // Check if user is already logged in
     const token = localStorage.getItem('chatToken');
     if (token) {
