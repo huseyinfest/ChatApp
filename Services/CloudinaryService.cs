@@ -18,7 +18,11 @@ namespace ChatApp.Services
 
             if (string.IsNullOrEmpty(cloudName) || string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(apiSecret))
             {
-                throw new InvalidOperationException("Cloudinary configuration is missing. Please set CloudName, ApiKey, and ApiSecret.");
+                _logger.LogWarning("Cloudinary configuration is missing. Image upload will not work.");
+                // Create a dummy account to prevent service initialization errors
+                var account = new Account("dummy", "dummy", "dummy");
+                _cloudinary = new Cloudinary(account);
+                return;
             }
 
             var account = new Account(cloudName, apiKey, apiSecret);
@@ -29,6 +33,12 @@ namespace ChatApp.Services
         {
             try
             {
+                // Check if Cloudinary is properly configured
+                if (_cloudinary.Api.Account.Cloud == "dummy")
+                {
+                    throw new InvalidOperationException("Cloudinary is not configured. Please set up Cloudinary credentials.");
+                }
+
                 using var stream = file.OpenReadStream();
                 
                 var uploadParams = new ImageUploadParams()
