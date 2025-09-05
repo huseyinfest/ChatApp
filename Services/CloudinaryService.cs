@@ -20,8 +20,8 @@ namespace ChatApp.Services
             {
                 _logger.LogWarning("Cloudinary configuration is missing. Image upload will not work.");
                 // Create a dummy account to prevent service initialization errors
-                var account = new Account("dummy", "dummy", "dummy");
-                _cloudinary = new Cloudinary(account);
+                var dummyAccount = new Account("dummy", "dummy", "dummy");
+                _cloudinary = new Cloudinary(dummyAccount);
                 return;
             }
 

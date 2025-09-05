@@ -77,7 +77,7 @@ namespace ChatApp.Services
             return tokenHandler.WriteToken(token);
         }
         
-        public async Task<UserDto> GetUserByEmailAsync(string email)
+        public async Task<UserDto?> GetUserByEmailAsync(string email)
         {
             var user = await _context.Users
                 .AsNoTracking()
