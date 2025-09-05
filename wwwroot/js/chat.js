@@ -128,6 +128,9 @@ function logout() {
 function showChatInterface() {
     document.getElementById('chatInterface').style.display = 'block';
     document.getElementById('currentUser').textContent = currentUser.username;
+    
+    // Enable image button by default when chat interface is shown
+    document.getElementById('imageButton').disabled = false;
 }
 
 // SignalR functions
