@@ -322,3 +322,4 @@
 /home/huseyin/ChatApp/obj/Debug/net9.0/ChatApp.sourcelink.json
 /home/huseyin/ChatApp/obj/Debug/net9.0/compressed/kkuuj1ry8o-cnq2hsylwo.gz
 /home/huseyin/ChatApp/obj/Debug/net9.0/compressed/2um4wr2fmt-0ihz98q53k.gz
+/home/huseyin/ChatApp/bin/Debug/net9.0/CloudinaryDotNet.dll
