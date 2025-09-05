@@ -13,10 +13,12 @@ namespace ChatApp.Controllers
     public class MessageController : ControllerBase
     {
         private readonly IMessageService _messageService;
+        private readonly ICloudinaryService _cloudinaryService;
         
-        public MessageController(IMessageService messageService)
+        public MessageController(IMessageService messageService, ICloudinaryService cloudinaryService)
         {
             _messageService = messageService;
+            _cloudinaryService = cloudinaryService;
         }
         
         [HttpPost("send")]
@@ -105,23 +107,8 @@ namespace ChatApp.Controllers
                 
             try
             {
-                // Generate unique filename
-                var fileExtension = Path.GetExtension(image.FileName);
-                var fileName = $"{Guid.NewGuid()}{fileExtension}";
-                var uploadsPath = Path.Combine("wwwroot", "uploads", "images");
-                var filePath = Path.Combine(uploadsPath, fileName);
-                
-                // Ensure directory exists
-                Directory.CreateDirectory(uploadsPath);
-                
-                // Save file
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await image.CopyToAsync(stream);
-                }
-                
-                // Create image URL
-                var imageUrl = $"/uploads/images/{fileName}";
+                // Upload to Cloudinary
+                var imageUrl = await _cloudinaryService.UploadImageAsync(image, image.FileName);
                 
                 // Create message with image
                 var messageDto = new SendMessageDto

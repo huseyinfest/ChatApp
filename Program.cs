@@ -67,6 +67,7 @@ builder.Services.AddAuthorization();
 // Add Services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
 // Add CORS
 builder.Services.AddCors(options =>
